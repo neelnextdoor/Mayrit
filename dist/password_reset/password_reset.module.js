@@ -13,13 +13,14 @@ const password_reset_token_entity_1 = require("./password_reset_token.entity");
 const password_reset_service_1 = require("./password_reset.service");
 const password_reset_controller_1 = require("./password_reset.controller");
 const users_module_1 = require("../users/users.module");
+const mailer_service_1 = require("../mailer/mailer.service");
 let PasswordResetModule = class PasswordResetModule {
 };
 exports.PasswordResetModule = PasswordResetModule;
 exports.PasswordResetModule = PasswordResetModule = __decorate([
     (0, common_1.Module)({
         imports: [typeorm_1.TypeOrmModule.forFeature([password_reset_token_entity_1.PasswordResetToken]), users_module_1.UsersModule],
-        providers: [password_reset_service_1.PasswordResetService],
+        providers: [password_reset_service_1.PasswordResetService, mailer_service_1.MailService],
         controllers: [password_reset_controller_1.PasswordResetController],
     })
 ], PasswordResetModule);

@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { PasswordResetToken } from './password_reset_token.entity';
 import { UsersService } from '../users/users.service';
 import { v4 as uuid } from 'uuid';
+import {MailService} from "../mailer/mailer.service";
 
 @Injectable()
 export class PasswordResetService {
@@ -11,6 +12,7 @@ export class PasswordResetService {
     @InjectRepository(PasswordResetToken)
     private readonly resetRepo: Repository<PasswordResetToken>,
     private readonly usersService: UsersService,
+    private readonly mailService : MailService
   ) {}
 
   async requestReset(email: string) {
@@ -20,8 +22,9 @@ export class PasswordResetService {
     const token = uuid();
     const expiresAt = new Date(Date.now() + 1000 * 60 * 15); // 15 mins
     await this.resetRepo.save({ token, userId: user.id, expiresAt });
-    // In real world send email; here return token
-    return { token, expiresAt };
+    await this.mailService.sendEmail(token,expiresAt,email);
+
+    return { message: 'If Email exist, password reset request has been sent successfully.' };
   }
 
   async resetPassword(token: string, password: string) {
