@@ -6,7 +6,7 @@ import {
     UseInterceptors,
     UsePipes,
     ValidationPipe,
-    Res,
+    Res, UseGuards,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { GeminiImageService } from './image.service';
@@ -15,8 +15,10 @@ import * as path from 'path';
 import {ImageFileValidationPipe} from "../pipes/upload.image.pipe";
 import {UploadFileDto} from "../pdf/dto/pdf.dto";
 import {Response} from "express";
-import {extractJSONFromLLMResponse, generateMCQPrompt} from "../prompts/common.function";
+import {displayImageErrorMessage, extractJSONFromLLMResponse, generateMCQPrompt} from "../prompts/common.function";
+import {JwtAuthGuard} from "../auth/gaurds/jwt-auth.guard";
 
+@UseGuards(JwtAuthGuard)
 @Controller('image')
 export class ImageController {
   constructor(private readonly geminiImageService: GeminiImageService) {}
@@ -57,18 +59,8 @@ export class ImageController {
         res.status(200).json({ success: true, data: questions });
         
     }catch (error) {
-      let displayMessage = 'An unknown error occurred.';
-      if (
-        error?.response?.data?.error?.message?.toLowerCase().includes('provided image is not valid') ||
-        error?.message?.toLowerCase().includes('provided image is not valid')
-      ) {
-        displayMessage =
-          'The image you uploaded is not valid or supported. Please upload a clear PNG or JPEG image and try again.';
-      } else if (error?.message) {
-        displayMessage = error.message;
-      }
-
-      return res.status(400).json({ success: false, error: displayMessage });
+      const message = await displayImageErrorMessage(error);
+      return res.status(400).json({ success: false, error: message });
     }
   }
     
@@ -96,8 +88,8 @@ export class ImageController {
 
         res.status(200).json({ success: true, data: questions });
     }catch(error){
-        console.log(error);
-    }
+        const message = await displayImageErrorMessage(error);
+        return res.status(400).json({ success: false, error: message });    }
   }
 
   // 3. Inline image from a URL
@@ -106,7 +98,7 @@ export class ImageController {
   async generateFromImageUrl(
     @Body() body: UploadFileDto,
     @Res() res: Response
-  ){
+  ) {
       try {
           const prompt = generateMCQPrompt(body.maxCount, body.level);
           const llmText = await this.geminiImageService.generateFromImageUrl(
@@ -121,24 +113,10 @@ export class ImageController {
               return res.status(400).json({success: false, error: "Failed to parse AI response. Please try again."});
           }
 
-          res.status(200).json({ success: true, data: questions });
-      }catch (error) {
-          let displayMessage = 'An unknown error occurred.';
-
-          // Check for Gemini's invalid image error
-          if (
-            error?.response?.data?.error?.message?.toLowerCase().includes('provided image is not valid') ||
-            error?.message?.toLowerCase().includes('provided image is not valid')
-          ) {
-            displayMessage =
-              'The image you uploaded is not valid or supported. Please upload a clear PNG or JPEG image and try again.';
-          } else if (error?.message) {
-            // You can add more handlers for other known errors here
-            displayMessage = error.message;
-          }
-
-          // Respond (example for Express/NestJS)
-          return res.status(400).json({ success: false, error: displayMessage });
-        }
+          res.status(200).json({success: true, data: questions});
+      } catch (error) {
+        const message = await displayImageErrorMessage(error);
+        return res.status(400).json({ success: false, error: message });
       }
+  }
 }

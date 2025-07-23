@@ -43,3 +43,36 @@ export async function extractJSONFromLLMResponse(text: string): Promise<any[]> {
     return null;
   }
 }
+
+
+export async function  displayImageErrorMessage(error :any){
+    let displayMessage = 'An unknown error occurred.';
+    if (
+      error?.response?.data?.error?.message?.toLowerCase().includes('provided image is not valid') ||
+      error?.message?.toLowerCase().includes('provided image is not valid')
+    ) {
+      displayMessage =
+        'The image you uploaded is not valid or supported. Please upload a clear PNG or JPEG image and try again.';
+    } else if (error?.message) {
+      // You can add more handlers for other known errors here
+      displayMessage = error.message;
+    }
+
+    return displayMessage;
+      // Respond (example for Express/NestJS)
+}
+
+export async function  displayPdfErrorMessage(error :any){
+    let displayMessage = 'An unexpected error occurred.';
+    if (error.message && error.message.toLowerCase().includes('invalid pdf')) {
+      displayMessage =
+        'The uploaded file is not a valid or readable PDF. Please check the file and try again.';
+    } else if (error.message && error.message.toLowerCase().includes('password')) {
+      displayMessage =
+        'The PDF is password-protected and cannot be processed.';
+    } else {
+      displayMessage =
+        'Failed to process the PDF. Please make sure it is a valid, unencrypted PDF, and try again.';
+    }
+    return displayMessage;
+}

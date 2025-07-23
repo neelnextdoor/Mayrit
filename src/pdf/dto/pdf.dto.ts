@@ -12,4 +12,8 @@ export class UploadFileDto {
   @IsOptional()
   @IsUrl()
   imageUrl : string
+
+  @IsOptional()
+  @IsUrl()
+  pdfUrl : string
 }
