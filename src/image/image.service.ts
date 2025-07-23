@@ -14,7 +14,6 @@ export class GeminiImageService {
 
   // 1. Upload an image file and generate content
   async generateFromUploadedFile(filePath: string, prompt: string): Promise<string> {
-    console.log(filePath);
     const uploadedFile = await this.ai.files.upload({
       file: filePath,
       config: { mimeType: "image/jpeg" },
@@ -72,9 +71,6 @@ export class GeminiImageService {
         { text: prompt },
       ],
     });
-
-    console.log(result);
-
 
     return result.text;
   }

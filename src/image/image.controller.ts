@@ -56,8 +56,19 @@ export class ImageController {
 
         res.status(200).json({ success: true, data: questions });
         
-    }catch(error){
-        console.log(error);
+    }catch (error) {
+      let displayMessage = 'An unknown error occurred.';
+      if (
+        error?.response?.data?.error?.message?.toLowerCase().includes('provided image is not valid') ||
+        error?.message?.toLowerCase().includes('provided image is not valid')
+      ) {
+        displayMessage =
+          'The image you uploaded is not valid or supported. Please upload a clear PNG or JPEG image and try again.';
+      } else if (error?.message) {
+        displayMessage = error.message;
+      }
+
+      return res.status(400).json({ success: false, error: displayMessage });
     }
   }
     
@@ -111,8 +122,23 @@ export class ImageController {
           }
 
           res.status(200).json({ success: true, data: questions });
-      }catch(error){
-        console.log(error);
+      }catch (error) {
+          let displayMessage = 'An unknown error occurred.';
+
+          // Check for Gemini's invalid image error
+          if (
+            error?.response?.data?.error?.message?.toLowerCase().includes('provided image is not valid') ||
+            error?.message?.toLowerCase().includes('provided image is not valid')
+          ) {
+            displayMessage =
+              'The image you uploaded is not valid or supported. Please upload a clear PNG or JPEG image and try again.';
+          } else if (error?.message) {
+            // You can add more handlers for other known errors here
+            displayMessage = error.message;
+          }
+
+          // Respond (example for Express/NestJS)
+          return res.status(400).json({ success: false, error: displayMessage });
+        }
       }
-  }
 }

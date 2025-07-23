@@ -51,7 +51,6 @@ export class PdfController {
 
         res.status(200).json({ success: true, data: questions });
       } catch (error) {
-        console.log(error);
         let displayMessage = 'An unexpected error occurred.';
 
         if (error.message && error.message.toLowerCase().includes('invalid pdf')) {
