@@ -15,6 +15,8 @@ const users_module_1 = require("./users/users.module");
 const password_reset_module_1 = require("./password_reset/password_reset.module");
 const user_entity_1 = require("./users/user.entity");
 const password_reset_token_entity_1 = require("./password_reset/password_reset_token.entity");
+const pdf_module_1 = require("./pdf/pdf.module");
+const image_module_1 = require("./image/image.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -37,6 +39,8 @@ exports.AppModule = AppModule = __decorate([
             users_module_1.UsersModule,
             auth_module_1.AuthModule,
             password_reset_module_1.PasswordResetModule,
+            pdf_module_1.PdfModule,
+            image_module_1.ImageModule
         ],
     })
 ], AppModule);

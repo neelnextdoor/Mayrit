@@ -6,6 +6,8 @@ import { UsersModule } from './users/users.module';
 import { PasswordResetModule } from './password_reset/password_reset.module';
 import { User } from './users/user.entity';
 import { PasswordResetToken } from './password_reset/password_reset_token.entity';
+import {PdfModule} from "./pdf/pdf.module";
+import {ImageModule} from "./image/image.module";
 
 @Module({
   imports: [
@@ -25,6 +27,8 @@ import { PasswordResetToken } from './password_reset/password_reset_token.entity
     UsersModule,
     AuthModule,
     PasswordResetModule,
+    PdfModule,
+    ImageModule
   ],
 })
 export class AppModule {}
