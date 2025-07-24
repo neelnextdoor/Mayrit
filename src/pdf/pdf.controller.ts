@@ -14,7 +14,12 @@ import { PdfService } from './pdf.service';
 import { Response} from 'express';
 import {UploadFileDto} from "./dto/pdf.dto";
 import {PdfFileValidationPipe} from "../pipes/upload.pdf.pipe";
-import {generateMCQPrompt, extractJSONFromLLMResponse, displayPdfErrorMessage} from "../prompts/common.function";
+import {
+    generateMCQPrompt,
+    extractJSONFromLLMResponse,
+    displayPdfErrorMessage,
+    generateFlashPrompt
+} from "../prompts/common.function";
 import {JwtAuthGuard} from "../auth/gaurds/jwt-auth.guard";
 
 @UseGuards(JwtAuthGuard)
@@ -39,7 +44,20 @@ export class PdfController {
       @Body() body: UploadFileDto,
       @Res() res: Response) {
       try {
-        const prompt = generateMCQPrompt(body.maxCount, body.level);
+          let prompt = null;
+        switch (body.type) {
+            case 'mcq':
+                prompt = generateMCQPrompt(body.maxCount, body.level);
+                break;
+
+            case 'flash':
+                prompt = generateFlashPrompt(body.maxCount, body.level);
+                break;
+
+            default:
+                prompt = generateMCQPrompt(body.maxCount, body.level);
+        }
+
         const llmText = await this.pdfService.processPdf(file.path, prompt);
         let questions;
         try {
@@ -54,6 +72,7 @@ export class PdfController {
       }
   }
 
+
   //  Inline pdf from a URL
   @Post('url')
   @UsePipes(new ValidationPipe({ transform: true }))
@@ -62,7 +81,19 @@ export class PdfController {
     @Res() res: Response
   ) {
       try {
-          const prompt = generateMCQPrompt(body.maxCount, body.level);
+        let prompt = null;
+        switch (body.type) {
+            case 'mcq':
+                prompt = generateMCQPrompt(body.maxCount, body.level);
+                break;
+
+            case 'flash':
+                prompt = generateFlashPrompt(body.maxCount, body.level);
+                break;
+
+            default:
+                prompt = generateMCQPrompt(body.maxCount, body.level);
+        }
           const llmText = await this.pdfService.generateFromPdfUrl(
               body.pdfUrl,
               prompt,

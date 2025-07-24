@@ -15,7 +15,12 @@ import * as path from 'path';
 import {ImageFileValidationPipe} from "../pipes/upload.image.pipe";
 import {UploadFileDto} from "../pdf/dto/pdf.dto";
 import {Response} from "express";
-import {displayImageErrorMessage, extractJSONFromLLMResponse, generateMCQPrompt} from "../prompts/common.function";
+import {
+    displayImageErrorMessage,
+    extractJSONFromLLMResponse,
+    generateFlashPrompt,
+    generateMCQPrompt
+} from "../prompts/common.function";
 import {JwtAuthGuard} from "../auth/gaurds/jwt-auth.guard";
 
 @UseGuards(JwtAuthGuard)
@@ -44,11 +49,21 @@ export class ImageController {
     @Body() body : UploadFileDto,
     @Res() res: Response) {
     try{
-        const prompt = generateMCQPrompt(body.maxCount, body.level);
-        const llmText = await this.geminiImageService.generateFromUploadedFile(
-        file.path,
-        prompt,
-        );
+        let prompt = null;
+        switch (body.type) {
+            case 'mcq':
+                prompt = generateMCQPrompt(body.maxCount, body.level);
+                break;
+
+            case 'flash':
+                prompt = generateFlashPrompt(body.maxCount, body.level);
+                break;
+
+            default:
+                prompt = generateMCQPrompt(body.maxCount, body.level);
+        }
+
+        const llmText = await this.geminiImageService.generateFromUploadedFile(file.path, prompt,);
         let questions;
         try {
           questions = await extractJSONFromLLMResponse(llmText);
@@ -74,11 +89,20 @@ export class ImageController {
     @Body() body : UploadFileDto,
     @Res() res: Response) {
     try{
-        const prompt = generateMCQPrompt(body.maxCount, body.level);
-        const llmText = await this.geminiImageService.generateFromInlineFile(
-          file.path,
-          prompt,
-        );
+        let prompt = null;
+        switch (body.type) {
+            case 'mcq':
+                prompt = generateMCQPrompt(body.maxCount, body.level);
+                break;
+
+            case 'flash':
+                prompt = generateFlashPrompt(body.maxCount, body.level);
+                break;
+
+            default:
+                prompt = generateMCQPrompt(body.maxCount, body.level);
+        }
+        const llmText = await this.geminiImageService.generateFromInlineFile(file.path, prompt,);
         let questions;
         try {
           questions = await extractJSONFromLLMResponse(llmText);
@@ -100,20 +124,28 @@ export class ImageController {
     @Res() res: Response
   ) {
       try {
-          const prompt = generateMCQPrompt(body.maxCount, body.level);
-          const llmText = await this.geminiImageService.generateFromImageUrl(
-              body.imageUrl,
-              prompt,
-          );
+        let prompt = null;
+        switch (body.type) {
+            case 'mcq':
+                prompt = generateMCQPrompt(body.maxCount, body.level);
+                break;
 
-          let questions;
-          try {
-              questions = await extractJSONFromLLMResponse(llmText);
-          } catch {
-              return res.status(400).json({success: false, error: "Failed to parse AI response. Please try again."});
-          }
+            case 'flash':
+                prompt = generateFlashPrompt(body.maxCount, body.level);
+                break;
 
-          res.status(200).json({success: true, data: questions});
+            default:
+                prompt = generateMCQPrompt(body.maxCount, body.level);
+        }
+      const llmText = await this.geminiImageService.generateFromImageUrl(body.imageUrl, prompt,);
+      let questions;
+      try {
+          questions = await extractJSONFromLLMResponse(llmText);
+      } catch {
+          return res.status(400).json({success: false, error: "Failed to parse AI response. Please try again."});
+      }
+
+      res.status(200).json({success: true, data: questions});
       } catch (error) {
         const message = await displayImageErrorMessage(error);
         return res.status(400).json({ success: false, error: message });

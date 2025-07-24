@@ -14,6 +14,28 @@ export function generateMCQPrompt(maxCount: string, level: string): string {
     `.trim();
 }
 
+export function generateFlashPrompt (maxCount:string,level:string) : string {
+    return `You are an expert educational content creator and API assistant.
+    
+    Please generate ${maxCount} flashcards with difficulty level ${level} and return the result strictly in valid JSON format, following this schema:
+    
+    {
+      "flashcards": [
+        {
+          "id": "string",
+          "question": "string",
+          "answer": "string",
+          "tags": ["string"]
+        }
+      ]
+    }
+    
+    - Use concise, clear questions and accurate answers, the answers should not be greater than 50 words and in nutshell and no pointers.
+    - Assign 1–3 relevant tags per flashcard.
+    - Ensure the JSON is valid and contains no extra text, comments, or explanations—output only the JSON object.
+    `.trim();
+}
+
 
 export async function extractJSONFromLLMResponse(text: string): Promise<any[]> {
   // Try to find a code block with ``````

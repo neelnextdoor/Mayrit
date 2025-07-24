@@ -1,4 +1,4 @@
-import {IsInt, IsString, IsIn, Min, Max, Matches, IsOptional, IsUrl} from 'class-validator';
+import {IsString, IsIn, Min, Max, Matches, IsOptional, IsUrl} from 'class-validator';
 
 export class UploadFileDto {
   @IsString()
@@ -16,4 +16,8 @@ export class UploadFileDto {
   @IsOptional()
   @IsUrl()
   pdfUrl : string
+
+  @IsString()
+  @IsIn(['mcq', 'flash'])
+  type: string
 }
